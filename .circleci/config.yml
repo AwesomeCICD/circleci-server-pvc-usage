@@ -53,14 +53,19 @@ jobs:
           command: |
             eksctl get clusters 
             eksctl utils write-kubeconfig --cluster=<< pipeline.parameters.cluster-name >>
-            kubectl config set-context --current --namespace=<< pipeline.parameters.k8s-namespace >>
           no_output_timeout: 3h
       - run:
           name: Fetch pvc volume sizes
           command: |
+              kubectl config set-context --current --namespace=<< pipeline.parameters.k8s-namespace >>
               for pod in "postgresql-0:/bitnami/postgresql" "mongodb-0:/bitnami/mongodb" "redis-master-0:/data" "redis-slave-0:/data"; do
-                  IFS=":" read pod_name path <<< "$pod"
+                  IFS=":" read pod_name path \<<< "$pod"
                   echo "Checking disk usage for $pod_name at $path"
                   kubectl exec "$pod_name" -- df -h "$path"
                   echo "-----------------------------------"
               done
+
+workflows:
+  main:
+    jobs:
+      - fetch-pvc-sizes
