@@ -33,6 +33,10 @@ jobs:
     executor: ubuntu-default
     steps:
       - checkout
+      - aws-cli/setup:
+          region: << pipeline.parameters.aws-default-region >>
+          role_arn: << pipeline.parameters.role-name >>
+          role_session_name: "CircleCI-${CIRCLE_WORKFLOW_ID}-${CIRCLE_JOB}"
       - run:
           name: Installing kubectl and eksctl
           command: |
