@@ -68,6 +68,11 @@ jobs:
                   kubectl exec "$pod_name" -- df -h "$path"
                   echo "-----------------------------------"
               done
+      - slack/notify:
+          channel: CSXYS632SF
+          event: fail
+          template: basic_fail_1
+
 
 workflows:
   main:
