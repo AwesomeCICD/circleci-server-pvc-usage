@@ -33,46 +33,41 @@ jobs:
     executor: ubuntu-default
     steps:
       - checkout
-      - aws-cli/setup:
-          region: << pipeline.parameters.aws-default-region >>
-          role_arn: << pipeline.parameters.role-name >>
-          role_session_name: "CircleCI-${CIRCLE_WORKFLOW_ID}-${CIRCLE_JOB}"
-      - run:
-          name: Installing kubectl and eksctl
-          command: |
-            echo "Installing kubectl..."
-            curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-            curl -LO "https://dl.k8s.io/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256"
-
-            echo "$(cat kubectl.sha256)  kubectl" | sha256sum --check
-            sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
-            kubectl version --client
-
-            echo "Installing eksctl..."
-            curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
-            sudo mv /tmp/eksctl /usr/local/bin
-            eksctl version
-      - run:
-          name: Write Kubeconfig
-          command: |
-            eksctl get clusters 
-            eksctl utils write-kubeconfig --cluster=<< pipeline.parameters.cluster-name >>
-          no_output_timeout: 3h
-      - run:
-          name: Fetch pvc volume sizes
-          command: |
-              kubectl config set-context --current --namespace=<< pipeline.parameters.k8s-namespace >>
-              for pod in "postgresql-0:/bitnami/postgresql" "mongodb-0:/bitnami/mongodb" "redis-master-0:/data" "redis-slave-0:/data"; do
-                  IFS=":" read pod_name path \<<< "$pod"
-                  echo "Checking disk usage for $pod_name at $path"
-                  kubectl exec "$pod_name" -- df -h "$path"
-                  echo "-----------------------------------"
-              done
-      - slack/notify:
-          channel: CSXYS632SF
-          event: fail
-          template: basic_fail_1
-
+      #- aws-cli/setup:
+      #    region: << pipeline.parameters.aws-default-region >>
+      #    role_arn: << pipeline.parameters.role-name >>
+      #    role_session_name: "CircleCI-${CIRCLE_WORKFLOW_ID}-${CIRCLE_JOB}"
+      #- run:
+      #    name: Installing kubectl and eksctl
+      #    command: |
+      #      echo "Installing kubectl..."
+      #      curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+      #      curl -LO "https://dl.k8s.io/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256"
+#
+      #      echo "$(cat kubectl.sha256)  kubectl" | sha256sum --check
+      #      sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+      #      kubectl version --client
+#
+      #      echo "Installing eksctl..."
+      #      curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+      #      sudo mv /tmp/eksctl /usr/local/bin
+      #      eksctl version
+      #- run:
+      #    name: Write Kubeconfig
+      #    command: |
+      #      eksctl get clusters 
+      #      eksctl utils write-kubeconfig --cluster=<< pipeline.parameters.cluster-name >>
+      #    no_output_timeout: 3h
+      #- run:
+      #    name: Fetch pvc volume sizes
+      #    command: |
+      #        kubectl config set-context --current --namespace=<< pipeline.parameters.k8s-namespace >>
+      #        for pod in "postgresql-0:/bitnami/postgresql" "mongodb-0:/bitnami/mongodb" "redis-master-0:/data" "redis-slave-0:/data"; do
+      #            IFS=":" read pod_name path \<<< "$pod"
+      #            echo "Checking disk usage for $pod_name at $path"
+      #            kubectl exec "$pod_name" -- df -h "$path"
+      #            echo "-----------------------------------"
+      #        done
 
 workflows:
   main:
